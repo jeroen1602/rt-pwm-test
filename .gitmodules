@@ -1,0 +1,3 @@
+[submodule "cpuburn"]
+	path = cpuburn
+	url = https://github.com/ssvb/cpuburn-arm.git
