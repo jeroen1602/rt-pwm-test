@@ -31,11 +31,11 @@ Use `make pwm` or `make cpuburn-a7` to build only one of the executables.
 
 ## PWM
 
-The `pwm` executable is for creating a simple square wave on `pin 18` of the Raspberry pi gpio port. The `pwm` executable
-doesn't have any settings, so if things must be changed, then take a look at the defines in the `pwm.cpp` file.
+The `pwm` executable is for creating a simple square wave on `pin 18` of the Raspberry pi gpio port. The `pwm` 
+executable uses a commandline argument for the frequency (in hz). To change any other settings you will need to change 
+ the defines in the `pwm.cpp` file.
 
  - Change the `OUTPUT_PIN` define to change the output pin.
- - Change the `FREQUENCY` define to change the frequency.
  
 Don't forget to rebuild the executable after changing the defines.
 

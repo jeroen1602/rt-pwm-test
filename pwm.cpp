@@ -1,7 +1,7 @@
 /**
  * Program for creating a simple 50% duty cycle pwm signal on a pin.
  * Change the `OUTPUT_PIN` define to change the output pin.
- * Change the `FREQUENCY` define to change the pwm frequency.
+ * Add the desired frequency as a command line argument.
  *
  * Close the program by a simple CTRL + C.
  */
@@ -12,19 +12,52 @@
 #include <gpiod.hpp>
 
 #define OUTPUT_PIN 18
-#define FREQUENCY 500000
 #define S_IN_US 1000000
+#define LARGEST_FREQUENCY 100000
+#define RPI_MAX_FREQUENCY 3000
 
 static bool run = true;
 
 void signalHandler(int signum);
 
-int main() {
+int main(int argc, char* argv[]) {
     std::signal(SIGINT, signalHandler);
     std::signal(SIGSEGV, signalHandler);
     std::signal(SIGTERM, signalHandler);
     std::signal(SIGILL, signalHandler);
     std::signal(SIGABRT, signalHandler);
+
+    // Parse frequency
+    if (argc != 2) {
+        std::cerr << "Unsupported command." << std::endl << "Usage: pwm <frequency (hz)>" << std::endl;
+        return 2;
+    }
+    long frequency = -1;
+    try {
+        frequency = std::stol(argv[1]);
+    } catch (const std::invalid_argument &ex) {
+        std::cerr << "Could not parse '" << argv[1] << "' to a number" << std::endl;
+        return 3;
+    }
+    if (frequency < 0) {
+        std::cerr << "Frequency can not be negative" << std::endl;
+        return 2;
+    }
+    if (frequency > LARGEST_FREQUENCY) {
+        std::cerr << "Frequencies larger than " << LARGEST_FREQUENCY << " are not supported" << std::endl;
+        return 2;
+    }
+    if (frequency == 0) {
+        std::cerr << "A frequency of 0 doesn't make sense" << std::endl;
+        return 2;
+    }
+    if (frequency > RPI_MAX_FREQUENCY) {
+        std::cerr << "Warning: frequency is larger than " << RPI_MAX_FREQUENCY << " (it is " << frequency << "), from "
+        << "testing it is shown that the max frequency for the raspberry pi 3 is around " << RPI_MAX_FREQUENCY/1000
+        << "Khz. Going to try and run with this frequency anyways, expect unusual frequencies on your output."
+        << std::endl;
+    }
+    std::cout << "Going to use " << frequency << " for the frequency" << std::endl;
 
     auto chip = gpiod::chip("0", gpiod::chip::OPEN_BY_NUMBER);
     if (!chip) {
@@ -49,7 +82,7 @@ int main() {
 
     bool state = false;
 
-    auto duration = std::chrono::microseconds((S_IN_US / FREQUENCY) / 2);
+    auto duration = std::chrono::microseconds((S_IN_US / frequency) / 2);
     while (run) {
         auto start = std::chrono::system_clock::now();
         line.set_value(state);
