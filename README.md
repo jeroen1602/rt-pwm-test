@@ -51,4 +51,6 @@ file to compile the correct version of the `cpuburn`test.
 
 If this is done then make sure to update the cmake instance. CD into the build folder `cd build` and `cmake ../`.
 
- 
+ ## RPI kernel
+
+ To build the exact kernel used, just take a look at the the README in the kernel-config folder.
